@@ -1,0 +1,85 @@
+language: c
+
+git:
+  depth: 5
+
+cache:
+  directories:
+  - "$HOME/.cabal"
+  - "$HOME/.stack"
+  - "$HOME/.ghc"
+  - "$HOME/.local"
+  - "$TRAVIS_BUILD_DIR/.stack-work"
+
+jobs:
+  include:
+
+  # Cabal
+  - env: BUILD=cabal GHCVER=8.4.4 CABALVER=2.2
+    addons: {apt: {packages: [cabal-install-2.2,ghc-8.4.4], sources: [hvr-ghc]}}
+  - env: BUILD=cabal GHCVER=8.6.5 CABALVER=2.2
+    addons: {apt: {packages: [cabal-install-2.2,ghc-8.6.5], sources: [hvr-ghc]}}
+
+  # Stack
+  # lts-10. ghc is 8.2.2
+  - env: BUILD=stack RESOLVER="lts-10.10"
+    addons: {apt: {packages: [libgmp-dev], sources: [hvr-ghc]}}
+  # lts-11. ghc is 8.2.2
+  - env: BUILD=stack RESOLVER="lts-11.22"
+    addons: {apt: {packages: [libgmp-dev], sources: [hvr-ghc]}}
+  # lts-13. ghc is 8.6.5
+  - env: BUILD=stack RESOLVER="lts-13.30"
+    addons: {apt: {packages: [libgmp-dev], sources: [hvr-ghc]}}
+
+before_install:
+  - mkdir -p "$HOME/.local/bin"
+  - export PATH="$HOME/.local/bin:$HOME/.cabal/bin:/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$PATH"
+
+install:
+  - |
+    case "$BUILD" in
+        cabal)
+            ghc --version
+            cabal --version
+            cabal update
+            #cabal install hspec-discover
+            cabal install --only-dependencies --enable-tests --enable-benchmarks --force-reinstalls --ghc-options=-O0 --reorder-goals --max-backjumps=-1
+            cabal configure --enable-tests --enable-benchmarks --ghc-options=-O0
+            cabal build
+            ;;
+        stack)
+            # install stack
+            curl -L https://github.com/commercialhaskell/stack/releases/download/v2.1.3/stack-2.1.3-linux-x86_64.tar.gz | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+
+            # build project with stack
+            stack --version
+            stack --resolver="$RESOLVER" ghc -- --version
+            stack --resolver="$RESOLVER" build --no-terminal \
+              --test --bench \
+              --no-run-tests --no-run-benchmarks \
+              --flag typed-digits:noisy
+            ;;
+        *)
+            echo unknown build tool!!
+            exit 1
+            ;;
+    esac
+
+
+script:
+  - |
+    case "$BUILD" in
+        cabal)
+            cabal test --show-details=streaming;
+            ;;
+        stack)
+            stack --resolver="$RESOLVER" test;
+            ;;
+        *)
+            echo unknown build tool!!
+            exit 1
+            ;;
+    esac
+
+notifications:
+  email: false
