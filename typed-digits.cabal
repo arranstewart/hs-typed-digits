@@ -5,8 +5,8 @@ description:    Digits, indexed by their base at the type level.
                 .
                 Please see the README, for more details, available on GitHub at <https://github.com/arranstewart/hs-typed-digits#readme>.
 category:       Data
-homepage:       https://github.com/arranstewart/typed-digits#readme
-bug-reports:    https://github.com/arranstewart/typed-digits/issues
+homepage:       https://github.com/arranstewart/hs-typed-digits#readme
+bug-reports:    https://github.com/arranstewart/hs-typed-digits/issues
 author:         Arran Stewart
 maintainer:     haskell-maintenance@arranstewart.info
 copyright:      2019 Arran Stewart
@@ -21,7 +21,7 @@ tested-with: GHC ==8.6.5 || ==8.4.4 || ==8.2.2
 
 source-repository head
   type: git
-  location: https://github.com/arranstewart/typed-digits
+  location: https://github.com/arranstewart/hs-typed-digits
 
 Flag Noisy
     Description: Enable more compilation warnings
